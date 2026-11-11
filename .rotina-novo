@@ -1,1 +1,0 @@
-Orquestração com Prefect de um pipeline bronze/prata/ouro em DuckDB, com checagens de qualidade que derrubam o fluxo (dados sintéticos, grátis)
