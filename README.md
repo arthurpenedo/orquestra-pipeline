@@ -29,8 +29,16 @@ python -m orquestra_pipeline rodar --linhas 5000
 python -m pytest -q
 ```
 
+### Rodar o dbt do pipeline-consumidor e agendar
+```
+pip install -e ../pipeline-consumidor
+python -m orquestra_pipeline dbt --csv ../pipeline-consumidor/dados/amostra_sintetica.csv
+python -m orquestra_pipeline dbt --csv <csv> --agendar "0 6 * * *"   # serve o fluxo todo dia às 6h (Ctrl+C para parar)
+```
+O `dbt build` é uma tarefa com 1 retry; se algum teste do dbt falhar, o fluxo falha. 13 testes, sem rede (o dbt e o `serve` são simulados nos testes).
+
 ## Limites honestos
-- Roda com o servidor temporário do Prefect; não há agendamento nem deploy configurado (próximo passo: `flow.serve(cron=...)`).
+- O agendamento (`flow.serve`) mantém um processo aberto; não há deploy em servidor. O `serve` e o dbt real não foram executados na rotina (testes usam simulação).
 - Os dados são sintéticos; o fluxo aceita um CSV próprio (`--csv`) com as colunas `id, empresa, data, status, nota`.
 - Não é Airflow (que não roda nativamente no Windows); os conceitos (tarefas, tentativas, dependências, falha visível) são os mesmos.
 
