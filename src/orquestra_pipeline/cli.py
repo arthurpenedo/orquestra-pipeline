@@ -16,7 +16,23 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--linhas", type=int, default=500)
     r.add_argument("--csv", help="CSV próprio (id, empresa, data, status, nota); sem isso gera dados sintéticos")
     r.add_argument("--db", default="orquestra.duckdb")
+    d = sub.add_parser("dbt", help="roda o dbt build do pipeline-consumidor como fluxo Prefect")
+    d.add_argument("--csv", required=True)
+    d.add_argument("--db", default="consumidor.duckdb")
+    d.add_argument("--agendar", metavar="CRON", help='em vez de rodar uma vez, serve o fluxo agendado (ex.: "0 6 * * *")')
     args = p.parse_args(argv)
+
+    if args.cmd == "dbt":
+        from . import dbt_fluxo
+        if args.agendar:
+            dbt_fluxo.servir(args.csv, args.db, args.agendar)
+            return 0
+        try:
+            print(json.dumps(dbt_fluxo.pipeline_dbt(args.csv, args.db)))
+        except dbt_fluxo.DbtFalhou as e:
+            print(f"falhou: {e}")
+            return 1
+        return 0
 
     csv = Path(args.csv) if args.csv else etapas.gerar_dados(
         Path(tempfile.mkdtemp(prefix="orquestra-")) / "reclamacoes.csv", args.linhas)
