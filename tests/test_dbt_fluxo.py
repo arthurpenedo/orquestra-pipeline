@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 from prefect.testing.utilities import prefect_test_harness
 
@@ -24,6 +26,19 @@ def test_dbt_falha_derruba_o_fluxo_e_tenta_de_novo(tmp_path, monkeypatch):
     with pytest.raises(dbt_fluxo.DbtFalhou):
         dbt_fluxo.pipeline_dbt(str(tmp_path / "a.csv"), str(tmp_path / "d.duckdb"))
     assert len(chamadas) == 2  # 1 tentativa + 1 retry
+
+
+def test_dbt_real_roda_bronze_prata_ouro(tmp_path):
+    """Sem mock: roda o `dbt build` de verdade do pipeline-consumidor (pula se não estiver instalado)."""
+    pytest.importorskip("pipeline_consumidor")
+    import pipeline_consumidor
+
+    amostra = Path(pipeline_consumidor.__file__).parents[2] / "dados" / "amostra_sintetica.csv"
+    if not amostra.exists():
+        pytest.skip("amostra sintética do pipeline-consumidor não encontrada")
+    r = dbt_fluxo.pipeline_dbt(str(amostra), str(tmp_path / "real.duckdb"))
+    assert r == {"dbt_ok": True}
+    assert (tmp_path / "real.duckdb").exists()
 
 
 def test_servir_agenda_com_cron(monkeypatch):
