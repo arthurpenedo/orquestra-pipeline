@@ -36,4 +36,6 @@ def pipeline_dbt(csv_path: str, db: str = "consumidor.duckdb") -> dict:
 
 def servir(csv_path: str, db: str = "consumidor.duckdb", cron: str = "0 6 * * *") -> None:
     """Deixa o fluxo do dbt agendado (cron padrão: todo dia às 6h). Bloqueia até Ctrl+C."""
+    if len(cron.split()) != 5:
+        raise ValueError(f"cron inválido: {cron!r} (esperado 5 campos, ex.: '0 6 * * *')")
     pipeline_dbt.serve(name="dbt-diario", cron=cron, parameters={"csv_path": str(csv_path), "db": str(db)})

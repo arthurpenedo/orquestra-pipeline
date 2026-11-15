@@ -49,6 +49,14 @@ def test_servir_agenda_com_cron(monkeypatch):
     assert recebido["parameters"] == {"csv_path": "x.csv", "db": "y.duckdb"}
 
 
+def test_servir_recusa_cron_com_campos_a_menos(monkeypatch):
+    chamado = []
+    monkeypatch.setattr(dbt_fluxo.pipeline_dbt, "serve", lambda **kw: chamado.append(kw))
+    with pytest.raises(ValueError, match="cron inválido"):
+        dbt_fluxo.servir("x.csv", cron="0 6 * *")
+    assert chamado == []
+
+
 def test_sem_pipeline_consumidor_da_erro_claro(tmp_path, monkeypatch):
     import builtins
     real = builtins.__import__
