@@ -82,7 +82,7 @@ def checar_qualidade(db: Path) -> dict[str, bool]:
             "prata_sem_id_duplicado": um("select count(*) - count(distinct id) from prata") == 0,
             "prata_nota_entre_1_e_5": um("select count(*) from prata where nota not between 1 and 5") == 0,
             "ouro_percentual_valido": um("select count(*) from ouro where pct_respondidas not between 0 and 100") == 0,
-            "ouro_soma_confere": um("select sum(reclamacoes) from ouro") == um("select count(*) from prata"),
+            "ouro_soma_confere": um("select coalesce(sum(reclamacoes), 0) from ouro") == um("select count(*) from prata"),
         }
     finally:
         con.close()

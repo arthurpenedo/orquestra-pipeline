@@ -49,3 +49,13 @@ def test_qualidade_falha_com_nota_invalida(db):
     con.close()
     with pytest.raises(etapas.QualidadeError, match="nota_entre_1_e_5"):
         etapas.checar_qualidade(db)
+
+
+def test_csv_so_com_cabecalho_passa_nas_checagens(tmp_path):
+    csv = tmp_path / "vazio.csv"
+    csv.write_text("id,empresa,data,status,nota\n")
+    banco = tmp_path / "t.duckdb"
+    assert etapas.carregar_bronze(csv, banco) == 0
+    assert etapas.transformar_prata(banco) == 0
+    assert etapas.agregar_ouro(banco) == 0
+    assert all(etapas.checar_qualidade(banco).values())
