@@ -73,12 +73,14 @@ def test_sem_pipeline_consumidor_da_erro_claro(tmp_path, monkeypatch):
 
 def test_cli_dbt_ok_falha_e_agendar(tmp_path, monkeypatch, capsys):
     from orquestra_pipeline import cli
+    arq = tmp_path / "a.csv"
+    arq.write_text("id", encoding="utf-8")
     monkeypatch.setattr(dbt_fluxo, "_construir", lambda csv, db: True)
-    assert cli.main(["dbt", "--csv", "a.csv", "--db", str(tmp_path / "d.duckdb")]) == 0
+    assert cli.main(["dbt", "--csv", str(arq), "--db", str(tmp_path / "d.duckdb")]) == 0
     assert '"dbt_ok": true' in capsys.readouterr().out
     monkeypatch.setattr(dbt_fluxo, "_construir", lambda csv, db: False)
-    assert cli.main(["dbt", "--csv", "a.csv", "--db", str(tmp_path / "d.duckdb")]) == 1
+    assert cli.main(["dbt", "--csv", str(arq), "--db", str(tmp_path / "d.duckdb")]) == 1
     visto = {}
     monkeypatch.setattr(dbt_fluxo, "servir", lambda csv, db, cron: visto.update(cron=cron))
-    assert cli.main(["dbt", "--csv", "a.csv", "--agendar", "0 6 * * *"]) == 0
+    assert cli.main(["dbt", "--csv", str(arq), "--agendar", "0 6 * * *"]) == 0
     assert visto["cron"] == "0 6 * * *"
