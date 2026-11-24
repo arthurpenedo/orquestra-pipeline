@@ -23,6 +23,9 @@ def main(argv: list[str] | None = None) -> int:
     d.add_argument("--agendar", metavar="CRON", help='em vez de rodar uma vez, serve o fluxo agendado (ex.: "0 6 * * *")')
     args = p.parse_args(argv)
 
+    if args.cmd == "rodar" and args.linhas < 1:
+        print("--linhas precisa ser 1 ou mais.", file=sys.stderr)
+        return 2
     if args.csv and not Path(args.csv).is_file():
         print(f"CSV não encontrado: {args.csv}", file=sys.stderr)
         return 2
