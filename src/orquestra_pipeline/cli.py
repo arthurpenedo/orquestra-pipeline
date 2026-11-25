@@ -26,6 +26,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "rodar" and args.linhas < 1:
         print("--linhas precisa ser 1 ou mais.", file=sys.stderr)
         return 2
+    if Path(args.db).is_dir():
+        print(f"--db precisa ser um arquivo .duckdb, mas {args.db} é uma pasta.", file=sys.stderr)
+        return 2  # antes de subir o servidor do Prefect só para falhar na hora de abrir a base
     if args.csv and not Path(args.csv).is_file():
         print(f"CSV não encontrado: {args.csv}", file=sys.stderr)
         return 2
